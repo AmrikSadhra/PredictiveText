@@ -2,8 +2,7 @@
 // Created by Paramjit.Sadhra on 11/12/2015.
 //
 
-#ifndef PREDICTIVETEXT_TRIESTRUCTURE_H
-#define PREDICTIVETEXT_TRIESTRUCTURE_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -20,8 +19,7 @@ typedef struct Trie{
 
 
 Trie *TrieConstructor();
-void TrieAdd(Trie *currentTrie, char *word);
+void TrieAdd(TrieNode *base, Trie *currentTrie, char *word);
+void TrieAddSimple(Trie *currentTrie, char *word);
 void displayTrie(Trie *currentTrie);
 void TrieFill(Trie *currentTrie);
-
-#endif //PREDICTIVETEXT_TRIESTRUCTURE_H

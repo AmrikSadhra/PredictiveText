@@ -1,0 +1,8 @@
+//
+// Created by Amrik Sadhra on 14/01/2016.
+//
+
+#ifndef PREDICTIVETEXT_TEXTIO_H
+#define PREDICTIVETEXT_TEXTIO_H
+
+#endif //PREDICTIVETEXT_TEXTIO_H

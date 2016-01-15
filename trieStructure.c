@@ -9,16 +9,9 @@
 
 #define pigsCanFly 1
 
-void AddWord(TrieNode *currentNode, char *word, int wordLength);
-
 int TrieSearch(Trie *currentTrie, char *word);
 
 TrieNode *nodeConstructor(TrieNode *parent, char key);
-
-TrieNode *getToEnd(Trie *currentTrie);
-
-TrieNode *searchRightAdd(TrieNode *currentNode, char key);
-TrieNode *searchRight(TrieNode *currentNode, char key);
 
 Trie *TrieConstructor() {
     Trie *myTrie;
@@ -43,43 +36,53 @@ TrieNode *nodeConstructor(TrieNode *parent, char key) {
     return myNode;
 }
 
-void TrieAdd(Trie *currentTrie, char *word) {
+void TrieAddSimple(Trie *currentTrie, char *word) {
+    TrieAdd(currentTrie->root, currentTrie, word);
+}
 
-    TrieNode *base = currentTrie->root;
+void TrieAdd(TrieNode *base, Trie *currentTrie, char *word) {
+    int wordLength = strlen(word) - 1;
 
-    int i = 0;
-    int wordLength = strlen(word);
+    TrieNode *temp;
 
-    while (pigsCanFly) {
-        TrieNode *current;
-        TrieNode *lastWorking;
-        TrieNode *temp;
+    static int i;
 
-        for (current = base; current != NULL; current = current->next) {
-            //If key matches letter in word, add letter as Trie
+    bool letterFound = false;
+
+    if (word[i] == '\0') return;
+
+    if (word[i] != word[i - 1]) {
+        for (TrieNode *current = base; current != NULL; current = current->next) {
             if (current->key == word[i]) {
-                temp = current->child;
-                current->child = nodeConstructor(current, word[i + 1]);
-                current->child->next = temp;
-                if (i == wordLength) current->child->isWord = true;
-                lastWorking = current;
-                break;
-            }
-            else {
-                temp = current->next;
-                current->next = nodeConstructor(current, word[i]);
-                current->next->next = temp;
-                if (i == wordLength) current->next->isWord = true;
-                lastWorking = current;
+                letterFound = true;
+                i++;
+                TrieAdd(current, currentTrie, word);
             }
         }
-        if (current == NULL) current = lastWorking;
-        base = current->child;
-        i++;
-        if (i == wordLength) break;
     }
-    currentTrie->count++;
+    if (letterFound == false) {
+        if(base->child == NULL){
+            base->child = nodeConstructor(base, word[i]);
+
+            if (i == wordLength) base->child->isWord = true;
+            currentTrie->count++;
+            i++;
+            TrieAdd(base->child, currentTrie, word);
+        }
+        else{
+            temp = base->child->next;
+            base->child->next = nodeConstructor(base, word[i]);
+            base->child->next->next = temp;
+
+            if (i == wordLength) base->isWord = true;
+            currentTrie->count++;
+            i++;
+            TrieAdd(base->child->next, currentTrie, word);
+        }
+    }
+    i = 0;
 }
+
 
 int TrieSearch(Trie *currentTrie, char *word) {
     TrieNode *level = currentTrie->root;
