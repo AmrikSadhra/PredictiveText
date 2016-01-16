@@ -9,15 +9,17 @@
 
 #define pigsCanFly 1
 
+void TrieAddInternal(TrieNode *base, Trie *currentTrie, char *word);
 int TrieSearch(Trie *currentTrie, char *word);
-
+TrieNode *traverseToEnd(TrieNode *base);
 TrieNode *nodeConstructor(TrieNode *parent, char key);
 
 Trie *TrieConstructor() {
     Trie *myTrie;
 
     myTrie = malloc(sizeof(Trie));
-    myTrie->root = nodeConstructor(NULL, 'a');
+    myTrie->root = nodeConstructor(NULL, '1');
+    myTrie->root->parent = nodeConstructor(NULL, '-');
     myTrie->count = 0;
 
     return myTrie;
@@ -36,53 +38,64 @@ TrieNode *nodeConstructor(TrieNode *parent, char key) {
     return myNode;
 }
 
-void TrieAddSimple(Trie *currentTrie, char *word) {
-    TrieAdd(currentTrie->root, currentTrie, word);
+void TrieAdd(Trie *currentTrie, char *word) {
+    TrieAddInternal(currentTrie->root, currentTrie, word);
 }
 
-void TrieAdd(TrieNode *base, Trie *currentTrie, char *word) {
+void TrieAddInternal(TrieNode *base, Trie *currentTrie, char *word) {
     int wordLength = strlen(word) - 1;
 
     TrieNode *temp;
 
     static int i;
 
-    bool letterFound = false;
+    if (i == wordLength + 1) return;
 
-    if (word[i] == '\0') return;
-
+    //If letter is not repeated, inititiate search for letter. If repeated, assume not present and add as usual
     if (word[i] != word[i - 1]) {
         for (TrieNode *current = base; current != NULL; current = current->next) {
             if (current->key == word[i]) {
-                letterFound = true;
                 i++;
-                TrieAdd(current, currentTrie, word);
+                if (current->child == NULL) {
+                    TrieAddInternal(current, currentTrie, word);
+                    return;
+                }
+                else {
+                    TrieAddInternal(current->child, currentTrie, word);
+                    return;
+                }
             }
         }
     }
-    if (letterFound == false) {
-        if(base->child == NULL){
-            base->child = nodeConstructor(base, word[i]);
+    if (base->child == NULL) {
+        base->child = nodeConstructor(base, word[i]);
 
-            if (i == wordLength) base->child->isWord = true;
-            currentTrie->count++;
-            i++;
-            TrieAdd(base->child, currentTrie, word);
-        }
-        else{
-            temp = base->child->next;
-            base->child->next = nodeConstructor(base, word[i]);
-            base->child->next->next = temp;
+        if (i == wordLength) base->child->isWord = true;
+        currentTrie->count++;
+        i++;
+        TrieAddInternal(base->child, currentTrie, word);
+    }
+    else {
+        TrieNode *branchEnd = traverseToEnd(base);
+        branchEnd->next = nodeConstructor(base, word[i]);
 
-            if (i == wordLength) base->isWord = true;
-            currentTrie->count++;
-            i++;
-            TrieAdd(base->child->next, currentTrie, word);
-        }
+        if (i == wordLength) branchEnd->next->isWord = true;
+        currentTrie->count++;
+        i++;
+        TrieAddInternal(branchEnd->next, currentTrie, word);
     }
     i = 0;
 }
 
+TrieNode *traverseToEnd(TrieNode *base){
+    TrieNode *notNull;
+
+    for (TrieNode *current = base; current != NULL; current = current->next) {
+        notNull = current;
+    }
+
+    return notNull;
+}
 
 int TrieSearch(Trie *currentTrie, char *word) {
     TrieNode *level = currentTrie->root;
@@ -107,25 +120,4 @@ int TrieSearch(Trie *currentTrie, char *word) {
         i++;
     }
 
-}
-
-void displayTrie(Trie *currentTrie) {
-    TrieNode *base = currentTrie->root;
-
-    while (pigsCanFly) {
-        while (pigsCanFly) {
-            TrieNode *current;
-            TrieNode *lastWorking;
-
-            for (current = base; current != NULL; current = current->next) {
-                printf("-%c", current->key);
-                lastWorking = current;
-            }
-            if (current == NULL) current = lastWorking;
-            base = current->child;
-            printf("|\n");
-            if (base == NULL) break;
-        }
-        base = base->next;
-    }
 }

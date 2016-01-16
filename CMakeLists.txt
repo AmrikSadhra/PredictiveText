@@ -3,5 +3,5 @@ project(PredictiveText)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
-set(SOURCE_FILES main.c trieStructure.c trieStructure.h textio.c textio.h)
+set(SOURCE_FILES main.c trieStructure.c trieStructure.h textio.c textio.h words.txt)
 add_executable(PredictiveText ${SOURCE_FILES})

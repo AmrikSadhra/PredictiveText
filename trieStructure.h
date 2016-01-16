@@ -19,7 +19,7 @@ typedef struct Trie{
 
 
 Trie *TrieConstructor();
-void TrieAdd(TrieNode *base, Trie *currentTrie, char *word);
-void TrieAddSimple(Trie *currentTrie, char *word);
-void displayTrie(Trie *currentTrie);
-void TrieFill(Trie *currentTrie);
+void TrieDestructor();
+
+void TrieAdd(Trie *currentTrie, char *word);
+int TrieSearch(Trie *currentTrie, char *word);
