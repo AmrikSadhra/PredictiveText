@@ -1,7 +1,3 @@
-//
-// Created by Paramjit.Sadhra on 11/12/2015.
-//
-
 #pragma once
 
 #include <stdbool.h>
@@ -24,8 +20,10 @@ void TrieDestructor(Trie *toDestroy);
 
 void TrieAdd(Trie *currentTrie, char *word);
 
-int fillTrie(Trie *currentTrie, char *fileName);
+int FillTrie(Trie *currentTrie, char *fileName);
 
 TrieNode *TrieSearch(Trie *currentTrie, char *word);
 
-char** GetWords(Trie *currentTrie, char *partial, int *numPredictions);
+char **GetWords(Trie *currentTrie, char *partial, int *numPredictions);
+
+void ScratchPad(Trie *currentTrie);
