@@ -11,11 +11,7 @@
     </ADDITIONAL_GENERATION_ENVIRONMENT>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3d470242-f6e9-412c-8eaa-5e3e5ca5c4a1" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.c" afterPath="$PROJECT_DIR$/main.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/trieStructure.c" afterPath="$PROJECT_DIR$/trieStructure.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/trieStructure.h" afterPath="$PROJECT_DIR$/trieStructure.h" />
-    </list>
+    <list default="true" id="3d470242-f6e9-412c-8eaa-5e3e5ca5c4a1" name="Default" comment="" />
     <ignored path="PredictiveText.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -38,8 +34,8 @@
       <file leaf-file-name="trieStructure.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/trieStructure.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.16831683">
-              <caret line="266" column="71" selection-start-line="266" selection-start-column="71" selection-end-line="266" selection-end-column="71" />
+            <state vertical-scroll-proportion="0.9724972">
+              <caret line="417" column="5" selection-start-line="417" selection-start-column="5" selection-end-line="417" selection-end-column="5" />
               <folding>
                 <element signature="e#1116#1752#0" expanded="false" />
                 <element signature="e#1116#1996#0" expanded="false" />
@@ -920,8 +916,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/trieStructure.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.16831683">
-          <caret line="266" column="71" selection-start-line="266" selection-start-column="71" selection-end-line="266" selection-end-column="71" />
+        <state vertical-scroll-proportion="0.9724972">
+          <caret line="417" column="5" selection-start-line="417" selection-start-column="5" selection-end-line="417" selection-end-column="5" />
           <folding>
             <element signature="e#1116#1752#0" expanded="false" />
             <element signature="e#1116#1996#0" expanded="false" />
