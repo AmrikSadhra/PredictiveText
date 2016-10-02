@@ -1,25 +1,13 @@
-//
-// Created by Paramjit.Sadhra on 11/12/2015.
-//
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <conio.h>
 #include "trieStructure.h"
-
-#define pigsCanFly 1
-#define MAX_WORD_LENGTH 20
-#define MAX_NUM_PREDICTIONS 40
 
 /* Internal function prototypes */
 void TrieAddInternal(TrieNode *base, Trie *currentTrie, char *word);
 TrieNode *TraverseToEnd(TrieNode *base);
 TrieNode *NodeConstructor(TrieNode *parent, char key);
 void NodeDestructor(TrieNode *toDestroy);
-char *ReadColumn(TrieNode *currentTrie);
+char *ReadColumn(TrieNode *base, bool readPast, int *isWord);
 
-/*---------------------------------------------- TrieConstructor -----
+/*--------------------------------------------------------------------
 |  Function TrieConstructor
 |
 |  Purpose:  Allocates memory for a trie structure using malloc
@@ -43,7 +31,7 @@ Trie *TrieConstructor(void) {
     return myTrie;
 }
 
-/*------------------------------------------------- NodeConstructor -----
+/*--------------------------------------------------------------------
 |  Function NodeConstructor
 |
 |  Purpose:  Allocates memory for a node structure using malloc
@@ -71,6 +59,16 @@ TrieNode *NodeConstructor(TrieNode *parent, char key) {
     return myNode;
 }
 
+/*--------------------------------------------------------------------
+|  Function NodeDestructor
+|
+|  Purpose:  Recursively frees all child and sibling nodes, then frees
+|            itself
+|  Parameters:
+|      TrieNode *toDestroy -- Node to free
+|
+|  Returns:  void
+*-------------------------------------------------------------------*/
 void NodeDestructor(TrieNode *toDestroy) {
     /* If child and sibling are null, it is safe to free the current node */
     if ((toDestroy->child == NULL) && (toDestroy->next == NULL)) {
@@ -78,15 +76,25 @@ void NodeDestructor(TrieNode *toDestroy) {
     }
     /* If either child or sibling not freem call the destructor appropriately */
     else {
-        if (toDestroy->child != NULL) {
-            NodeDestructor(toDestroy->child);
-        }
         if (toDestroy->next != NULL) {
             NodeDestructor(toDestroy->next);
+        }
+        if (toDestroy->child != NULL) {
+            NodeDestructor(toDestroy->child);
         }
     }
 }
 
+/*--------------------------------------------------------------------
+|  Function TrieDestructor
+|
+|  Purpose:  Calls the NodeDestructor on the root node until it is null.
+|            then free's the Trie
+|  Parameters:
+|      TrieNode *toDestroy -- Trie to free
+|
+|  Returns:  void
+*-------------------------------------------------------------------*/
 void TrieDestructor(Trie *toDestroy) {
     /* If the root node has been destroyed by NodeDestructor, it is safe to free the Trie */
     if (toDestroy->root == NULL) {
@@ -98,10 +106,35 @@ void TrieDestructor(Trie *toDestroy) {
     }
 }
 
+/*--------------------------------------------------------------------
+|  Function TrieAdd
+|
+|  Purpose:  A wrapper for the TrieAddInternal function, to abstract the user
+|            away from the root node of the Trie.
+|
+|  Parameters:
+|      TrieNode *currentTrie -- Trie to add word to
+|      char *word            -- Word to add to Trie
+|
+|  Returns:  void
+*-------------------------------------------------------------------*/
 void TrieAdd(Trie *currentTrie, char *word) {
     TrieAddInternal(currentTrie->root, currentTrie, word);
 }
 
+/*--------------------------------------------------------------------
+|  Function TrieAddInternal
+|
+|  Purpose:  Recursive function to add word to Trie, calling itself
+|            with new TrieNodes in order to add entirett of word
+|
+|  Parameters:
+|      TrieNode *currentTrie -- Trie to add word to
+|      char *word            -- Word to add to Trie
+|      TrieNode *base        -- Node in which to add word[i] letter to
+|
+|  Returns:  void
+*-------------------------------------------------------------------*/
 void TrieAddInternal(TrieNode *base, Trie *currentTrie, char *word) {
     int wordLength = strlen(word) - 1;
 
@@ -159,6 +192,16 @@ void TrieAddInternal(TrieNode *base, Trie *currentTrie, char *word) {
     i = 0;
 }
 
+/*--------------------------------------------------------------------
+|  Function TraverseToEnd
+|
+|  Purpose:  Traverses input TrieNodes siblings until it reaches NULL
+|
+|  Parameters:
+|      TrieNode *base        -- Node from which to start traversal from
+|
+|  Returns:  Node at far end of siblings of *base
+*-------------------------------------------------------------------*/
 TrieNode *TraverseToEnd(TrieNode *base) {
     TrieNode *notNull;
 
@@ -170,6 +213,17 @@ TrieNode *TraverseToEnd(TrieNode *base) {
     return notNull;
 }
 
+/*--------------------------------------------------------------------
+|  Function TrieSearch
+|
+|  Purpose: Searches the input Trie for a string, returning the location
+|           of the words tail
+|  Parameters:
+|      TrieNode *currentTrie -- Trie to search for word in
+|      char *word            -- Word to search for in Trie
+|
+|  Returns:  TrieNode pointer corresponding to node containing last letter in word
+*-------------------------------------------------------------------*/
 TrieNode *TrieSearch(Trie *currentTrie, char *word) {
     TrieNode *level = currentTrie->root;
 
@@ -197,27 +251,56 @@ TrieNode *TrieSearch(Trie *currentTrie, char *word) {
     }
 }
 
+/*--------------------------------------------------------------------
+|  Function GetWords
+|
+|  Purpose: Returns a list of predictions based upon the partial word
+|           entered into function
+|  Parameters:
+|      TrieNode *currentTrie -- Trie to search for predictions in
+|      char *word            -- Partial word to get predictions for
+|      int *numPredictions   -- Allows the function to return the 2D array
+|                               as well as the number of predictions
+|
+|  Returns:  2D array of strings containing predictions for partial word in Trie
+*-------------------------------------------------------------------*/
 char **GetWords(Trie *currentTrie, char *partial, int *numPredictions) {
     TrieNode *head;
     int i = 0;
+    int isWord = 0;
+    bool readPast = false;
 
+    /* Allocate memory for 2D array */
     char **buf = malloc(MAX_NUM_PREDICTIONS * sizeof(char *));
     for (i = 0; i < MAX_NUM_PREDICTIONS; ++i) {
         buf[i] = malloc(MAX_WORD_LENGTH * sizeof(char));
     }
 
+    /* Search for partial part of word */
     head = TrieSearch(currentTrie, partial);
     if (head == NULL) {
+        /* If cant be found, set num predictions to zero and return NULL */
         *numPredictions = 0;
         return NULL;
     }
     head = head->child;
 
+    /* The first entry in predictions should be a blank line. Set line 0 to terminating chars and start from i = 1 */
     i = 1;
     memset(buf[0], '\0', MAX_WORD_LENGTH);
 
+    /* Read columns down each neighbouring node, into 2D preidctions array */
     for (TrieNode *current = head; current != NULL; current = current->next) {
-        strcpy(buf[i], ReadColumn(current));
+        ISWORD:
+        strcpy(buf[i], ReadColumn(current, readPast, &isWord));
+        if(isWord == 1){
+            isWord = 0;
+            i++;
+            readPast = true;
+            goto ISWORD;
+        }else{
+            readPast = false;
+        }
         i++;
     }
 
@@ -226,7 +309,19 @@ char **GetWords(Trie *currentTrie, char *partial, int *numPredictions) {
     return buf;
 }
 
-char *ReadColumn(TrieNode *currentTrie) {
+/*--------------------------------------------------------------------
+|  Function ReadColumn
+|
+|  Purpose: Traverse every child from base node and append their keys
+|           to a buffer, reads a column of letters.
+|
+|  Parameters:
+|      TrieNode *currentTrie -- Trie to search for word in
+|      char *word            -- Word to search for in Trie
+|
+|  Returns: String of all keys concatenated from base node downwards
+*-------------------------------------------------------------------*/
+char *ReadColumn(TrieNode *base, bool readPast, int *isWord) {
     static char buf[MAX_WORD_LENGTH];
     memset(buf, 0, MAX_WORD_LENGTH);
 
@@ -234,15 +329,31 @@ char *ReadColumn(TrieNode *currentTrie) {
 
     TrieNode *current;
 
-    for (current = currentTrie; current != NULL; current = current->child) {
+    /* Traverse nodes downwards, appending the key value of each to a buffer, with the buffer returned */
+    for (current = base; current != NULL; current = current->child) {
         buf[i] = current->key;
         i++;
+        if((current->isWord == true)&&(readPast == false)){
+            *isWord = 1;
+            break;
+        }
     }
     buf[i] = '\0';
 
     return buf;
 }
 
+/*--------------------------------------------------------------------
+|  Function FillTrie
+|
+|  Purpose: Fills the trie with a wordlist contained within the file
+|           specified by fileName
+|  Parameters:
+|      TrieNode *currentTrie -- Trie to fill with words
+|      char *fileName        -- Filename of file containing words to add to trie
+|
+|  Returns:  Number corresponding to success of opening file handle (0 = fail, 1 = success)
+*-------------------------------------------------------------------*/
 int FillTrie(Trie *currentTrie, char *fileName) {
     FILE *fp;
     char inWord[MAX_WORD_LENGTH];
@@ -260,6 +371,17 @@ int FillTrie(Trie *currentTrie, char *fileName) {
     return 1;
 }
 
+/*--------------------------------------------------------------------
+|  Function CheckTrie
+|
+|  Purpose: Checks generated Trie for all words contained in fileName.
+|           Prints missing words and increments a counter for every missing word.
+|  Parameters:
+|      TrieNode *currentTrie -- Trie to check for presence of words in
+|      char *fileName        -- Filename of file containing words check for
+|
+|  Returns:  void
+*-------------------------------------------------------------------*/
 void CheckTrie(Trie *currentTrie, char *fileName) {
     FILE *fp;
     char inWord[MAX_WORD_LENGTH];
@@ -281,6 +403,18 @@ void CheckTrie(Trie *currentTrie, char *fileName) {
     fclose(fp);
 }
 
+/*--------------------------------------------------------------------
+|  Function ScratchPad
+|
+|  Purpose: Allows user to test predictive text capabilities on Trie
+|           Dynamically updates prediction list and allows easy entry and
+|           scroll through of data. Asks user if they wish to save their
+|           predicted words.
+|  Parameters:
+|      TrieNode *currentTrie -- Trie to read for predicted words
+|
+|  Returns:  void
+*-------------------------------------------------------------------*/
 void ScratchPad(Trie *currentTrie) {
     printf(".------------------- Predictive Text -------------------.\n");
     printf("| Type in a word and use the left and right arrow keys  |\n");
@@ -288,6 +422,10 @@ void ScratchPad(Trie *currentTrie) {
     printf("|                  and escape to quit.                  |\n");
     printf("|_______________________________________________________|\n");
     printf("\n\n                      Scratchpad:\n\n");
+
+    FILE *fp;
+    fp = fopen("Predictions.txt", "w");
+    fprintf(fp, "Predictions:\n");
 
     int numPredictions = 0;
     int ch;
@@ -308,6 +446,8 @@ void ScratchPad(Trie *currentTrie) {
             if (j != 0) {
                 printf("\r                                                           ");
                 printf("\r%s%s\n", toPredict, predictions[i]);
+                fprintf(fp, "\r                                                           ");
+                fprintf(fp, "\r%s%s\n", toPredict, predictions[i]);
                 for (k = 0; k <= j; k++) {
                     toPredict[k] = '\0';
                     j = 0;
@@ -322,6 +462,7 @@ void ScratchPad(Trie *currentTrie) {
          * So no predictions. Then print inputted word + prediction at i */
         if (((ch >= 65) && (ch <= 122)) || ((ch >= 48) && (ch <= 57))) {
             if (j < MAX_WORD_LENGTH) {
+                i = 0;
                 toPredict[j] = (char) ch;
                 j++;
                 toPredict[j] = '\0';
@@ -335,6 +476,8 @@ void ScratchPad(Trie *currentTrie) {
             }
             printf("\r                                                           ");
             printf("\r%s%s", toPredict, predictions[i]);
+            fprintf(fp, "\r                                                           ");
+            fprintf(fp, "\r%s%s", toPredict, predictions[i]);
         }
 
         /* If backspace pressed and not at 0th position in buffer, set i to 0 so that prediction is blank, decrement
@@ -353,6 +496,8 @@ void ScratchPad(Trie *currentTrie) {
                 }
                 printf("\r                                                           ");
                 printf("\r%s%s", toPredict, predictions[i]);
+                fprintf(fp, "\r                                                           ");
+                fprintf(fp, "\r%s%s", toPredict, predictions[i]);
             }
         }
 
@@ -372,7 +517,24 @@ void ScratchPad(Trie *currentTrie) {
                 }
                 printf("\r                                                           ");
                 printf("\r%s%s", toPredict, predictions[i]);
+                fprintf(fp, "\r                                                           ");
+                fprintf(fp, "\r%s%s", toPredict, predictions[i]);
             }
         }
     }
+
+    printf("\nDo you wish to save? Y/N    \n");
+    ch = _getch();
+
+    if((ch == 'y')||(ch == 'Y')){
+        fclose(fp);
+        printf("Saved to Predictions.txt. Press any key to exit.\n");
+        _getch();
+    }
+    if((ch == 'n')||(ch = 'N')){
+        fclose(fp);
+        remove("Prediction.txt"); //Clean up
+    }
+
+
 }
